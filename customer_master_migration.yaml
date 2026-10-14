@@ -1,0 +1,125 @@
+# =====================================================
+# AI Generated Synthetic Migration Configuration
+# Demo / Training Purposes Only
+# No Real Client Data
+# =====================================================
+
+pipeline:
+
+  pipeline_id: CUSTOMER_MASTER_LOAD
+  source_system: LEGACY_CRM
+  target_system: ANALYTICS_LAKE
+
+  environment: DEV
+
+  owner:
+    team: DATA_ENGINEERING
+    email: demo-team@example.com
+
+# =====================================================
+# TASK 1 : LANDING LOAD
+# =====================================================
+
+CUSTOMER_LANDING_LOAD:
+
+  - notebook: /workspace/notebooks/load_landing
+
+    timeout: 0
+
+    parameters:
+
+      dataset_id: CUSTOMER_MASTER
+
+      job_name: product_load_pipeline.sql
+
+      sql_params:
+
+        source_table: CUSTOMER_SOURCE
+        target_table: CUSTOMER_LANDING
+
+        load_type: FULL
+
+# =====================================================
+# TASK 2 : TRANSFORMATION
+# =====================================================
+
+CUSTOMER_TRANSFORM:
+
+  - notebook: /workspace/notebooks/run_transform
+
+    timeout: 0
+
+    parameters:
+
+      dataset_id: CUSTOMER_MASTER
+
+      job_name: CUSTOMER_TRANSFORM
+
+      sql_params:
+
+        source_table: CUSTOMER_LANDING
+        target_table: CUSTOMER_STAGING
+
+        business_date: "{run_date}"
+
+# =====================================================
+# TASK 3 : DATA QUALITY
+# =====================================================
+
+CUSTOMER_DQ_CHECK:
+
+  - notebook: /workspace/notebooks/data_quality
+
+    timeout: 0
+
+    parameters:
+
+      dq_rule_set: CUSTOMER_STANDARD_RULES
+
+      sql_params:
+
+        table_name: CUSTOMER_STAGING
+
+        minimum_records: 100
+
+        duplicate_check_column: CUSTOMER_ID
+
+# =====================================================
+# TASK 4 : FINAL LOAD
+# =====================================================
+
+CUSTOMER_FINAL_LOAD:
+
+  - notebook: /workspace/notebooks/load_final
+
+    timeout: 0
+
+    parameters:
+
+      dataset_id: CUSTOMER_MASTER
+
+      sql_params:
+
+        source_table: CUSTOMER_STAGING
+
+        target_table: CUSTOMER_DIMENSION
+
+        load_strategy: UPSERT
+
+# =====================================================
+# TASK 5 : ARCHIVAL
+# =====================================================
+
+CUSTOMER_ARCHIVE:
+
+  - notebook: /workspace/notebooks/archive_data
+
+    timeout: 0
+
+    parameters:
+
+      source_table: CUSTOMER_STAGING
+
+      archive_table: CUSTOMER_ARCHIVE
+
+      retention_days: 365
