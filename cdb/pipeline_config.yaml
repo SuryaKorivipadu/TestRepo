@@ -1,0 +1,26 @@
+# Dummy pipeline configuration for a data engineering project
+
+pipeline:
+  name: "de_etl_pipeline"
+  description: "Daily ETL: landing -> bronze -> silver"
+  schedule: "0 6 * * *"   # Run at 6 AM every day
+
+bronze:
+  source: "abfss://landing@storage.dfs.core.windows.net/"
+  format: "csv"
+  tables:
+    - customers
+    - orders
+    - products
+
+silver:
+  target_catalog: "bnd"
+  target_schema: "silver"
+  merge_key:
+    customers: "customer_id"
+    orders: "order_id"
+    products: "product_id"
+
+alerts:
+  on_failure: "data-eng-team@example.com"
+  sla_minutes: 120
